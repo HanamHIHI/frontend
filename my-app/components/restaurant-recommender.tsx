@@ -1,16 +1,10 @@
 'use client'
 
-// import { ChevronDown, MapPin, Star } from 'lucide-react'
-// import { Button } from '@/components/ui/button'
+import { MapPin, Star, Search } from 'lucide-react'
+import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
-// import {
-//   DropdownMenu,
-//   DropdownMenuContent,
-//   DropdownMenuItem,
-//   DropdownMenuTrigger,
-// } from '@/components/ui/dropdown-menu'
 import axios from "axios"
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 type Restaurant = {
   id: number
@@ -18,25 +12,26 @@ type Restaurant = {
   review_score: number
   category_score: number
   total_score: number
+  addr: string | ''
+  dist: string | ''
+  reqtime: string | ''
 }
 
 export function RestaurantRecommender() {
-  // const [selectedCuisine, setSelectedCuisine] = useState<string | null>(null)
 
-  // const cuisineTypes = Array.from(new Set(restaurants.map(r => r.cuisine)))
-  
-  // const filteredRestaurants = selectedCuisine
-  //   ? restaurants.filter(r => r.cuisine === selectedCuisine)
-  //   : restaurants
-
+  const [searchTerm, setSearchTerm] = useState('');
   const [res, setRes] = useState<Restaurant[]>([]);
+
+  // const activatePredict = (e: KeyboardEvent<HTMLInputElement>) => {
+  //   if(e.key == "Enter") {
+  //     predict();
+  //   }
+  // }
 
   const predict = async () => {
     const url = `http://localhost:8000/predict/`
     try {
-      const response = await axios.post(url, new URLSearchParams({
-        "text": "비가 오는 날 출출할 때 가기 좋은 식당이에요"
-      }))
+      const response = await axios.post(url, { text: searchTerm })
       // return reponse
       setRes(response.data["vals"]);
     } catch (err) {
@@ -44,32 +39,23 @@ export function RestaurantRecommender() {
     }
   }
 
-  useEffect(() => {
-    predict();
-  }, [])
-
   return (
     <div className="max-w-md mx-auto p-4 space-y-4">
       <h1 className="text-2xl font-bold text-center">Restaurant Recommender</h1>
-      
-      {/* <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="w-full justify-between">
-            {selectedCuisine || 'Filter by cuisine'}
-            <ChevronDown className="ml-2 h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-full">
-          <DropdownMenuItem onSelect={() => setSelectedCuisine(null)}>
-            All Cuisines
-          </DropdownMenuItem>
-          {cuisineTypes.map(cuisine => (
-            <DropdownMenuItem key={cuisine} onSelect={() => setSelectedCuisine(cuisine)}>
-              {cuisine}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu> */}
+
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        <Input
+          type="text"
+          placeholder="Search restaurants or cuisines..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") predict();
+          }}
+          className="pl-10 pr-4 py-2 w-full"
+        />
+      </div>
 
       <div className="space-y-4">
         {res.map(restaurant => (
@@ -82,18 +68,15 @@ export function RestaurantRecommender() {
               />
               <div className="flex-1 space-y-1">
                 <h2 className="font-semibold">{restaurant.name}</h2>
-                {/* <p className="text-sm text-muted-foreground">{restaurant.cuisine}</p>
+                <div className="flex items-start">
+                  <MapPin className="w-4 h-4 text-muted-foreground mt-1 mr-1 flex-shrink-0" />
+                  <p className="text-sm">{restaurant.addr}</p>
+                </div>
+                <p className="text-sm">{restaurant.dist + " " + restaurant.reqtime}</p>
                 <div className="flex items-center">
                   <Star className="w-4 h-4 text-yellow-400 mr-1" />
-                  <span className="text-sm">{restaurant.rating}</span>
-                </div> */}
-                <p className="text-sm">{restaurant.review_score}</p>
-                <p className="text-sm">{restaurant.category_score}</p>
-                <p className="text-sm">{restaurant.total_score}</p>
-                {/* <div className="flex items-start">
-                  <MapPin className="w-4 h-4 text-muted-foreground mt-1 mr-1 flex-shrink-0" />
-                  <p className="text-xs text-muted-foreground">{restaurant.address}</p>
-                </div> */}
+                  <p className="text-sm">{restaurant.total_score}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
