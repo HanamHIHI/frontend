@@ -29,7 +29,7 @@ export function RestaurantRecommender() {
   // }
 
   const predict = async () => {
-    const url = `http://localhost:8000/predict/`
+    const url = `http://44.211.141.205/predict`
     try {
       const response = await axios.post(url, { text: searchTerm })
       // return reponse
