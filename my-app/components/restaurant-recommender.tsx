@@ -4,7 +4,8 @@ import { MapPin, Star, Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import axios from "axios"
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Loading } from './loading'
 
 type Restaurant = {
   id: number
@@ -21,6 +22,7 @@ export function RestaurantRecommender() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [res, setRes] = useState<Restaurant[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // const activatePredict = (e: KeyboardEvent<HTMLInputElement>) => {
   //   if(e.key == "Enter") {
@@ -28,12 +30,19 @@ export function RestaurantRecommender() {
   //   }
   // }
 
+  useEffect(() => {
+    setLoading(false);
+  }, []);
+
   const predict = async () => {
-    const url = `http://44.211.141.205/predict`
+    const url = `https://api.what-to-eat-hanam.site/predict`
+    setLoading(true);
+
     try {
       const response = await axios.post(url, { text: searchTerm })
       // return reponse
       setRes(response.data["vals"]);
+      setLoading(false);
     } catch (err) {
       console.log(err);
     }
@@ -41,6 +50,7 @@ export function RestaurantRecommender() {
 
   return (
     <div className="max-w-md mx-auto p-4 space-y-4">
+
       <h1 className="text-2xl font-bold text-center">Restaurant Recommender</h1>
 
       <div className="relative">
@@ -51,11 +61,15 @@ export function RestaurantRecommender() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") predict();
+            if (e.key === "Enter") {
+              predict();
+            }
           }}
           className="pl-10 pr-4 py-2 w-full"
         />
       </div>
+
+      {loading && <Loading/>}
 
       <div className="space-y-4">
         {res.map(restaurant => (
