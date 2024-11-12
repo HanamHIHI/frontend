@@ -20,7 +20,9 @@
     "react": "19.0.0-rc-66855b96-20241106",
     "react-dom": "19.0.0-rc-66855b96-20241106",
     "react-spinners": "^0.14.1",
+    "react-spring": "^9.7.4",
     "serve": "^14.2.4",
+    "styled-components": "^6.1.13",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7"
   },

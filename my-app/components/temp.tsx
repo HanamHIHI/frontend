@@ -6,17 +6,17 @@ import { Card, CardContent } from '@/components/ui/card'
 import axios from "axios"
 import { useState } from 'react'
 import { Loading } from './loading'
-import { useTrail, animated } from 'react-spring';
+import { useTransition, animated } from 'react-spring';
 
 type Restaurant = {
-  id: number,
-  name: string,
-  review_score: number,
-  category_score: number,
-  total_score: number,
-  addr: string | '',
-  dist: string | '',
-  reqtime: string | '',
+  idx: number
+  name: string
+  review_score: number
+  category_score: number
+  total_score: number
+  addr: string | ''
+  dist: string | ''
+  reqtime: string | ''
 }
 
 export function RestaurantRecommender() {
@@ -24,9 +24,10 @@ export function RestaurantRecommender() {
   const [searchTerm, setSearchTerm] = useState('');
   const [res, setRes] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(false);
+  // const [query, setQuery] = useState<string>(''); // 검색어 상태
 
   // useTrail을 사용하여 각 항목에 순차적인 애니메이션 적용
-  const trail = useTrail(res.length, {
+  const transitions = useTransition(res, {
     from: { opacity: 0 },
     to: { opacity: 1 },
     config: { duration: 1000 },
@@ -36,7 +37,6 @@ export function RestaurantRecommender() {
   const makeAxios = () => {
     const request = axios.create({
       baseURL: "https://api.what-to-eat-hanam.site/",
-      // data: { "text": searchTerm },
       timeout: 100000,
     });
 
@@ -56,11 +56,21 @@ export function RestaurantRecommender() {
 
     try {
       const response = await request.post("predict", { "text": searchTerm });
-      setRes(response.data["vals"]);
+      
+      console.log(response.data["vals"]);
+
+      const resVal = response.data["vals"];
+      setRes(resVal);
+      
+      console.log(res);
     } catch (err) {
       console.log(err);
     }
   }
+
+  // useEffect(() => {
+  //   predict();
+  // }, []);
 
   return (
     <div className="max-w-md mx-auto p-4 space-y-4">
@@ -87,29 +97,29 @@ export function RestaurantRecommender() {
 
       {!loading &&
         <div className="space-y-4">
-          {trail.map((style, index) => (
-            <animated.div key={res[index].id} style={style}>
-            <Card key={res[index].id}>
-              <CardContent className="p-4 flex items-start space-x-4">
-                <img
-                  src={"../app/favicon.ico"}
-                  alt={res[index].name}
-                  className="w-24 h-24 rounded-md object-cover"
-                />
-                <div className="flex-1 space-y-1">
-                  <h2 className="font-semibold">{res[index].name}</h2>
-                  <div className="flex items-start">
-                    <MapPin className="w-4 h-4 text-muted-foreground mt-1 mr-1 flex-shrink-0" />
-                    <p className="text-sm">{res[index].addr}</p>
+          {transitions((style, restaurant) => (
+            <animated.div key={restaurant.idx} style={style}>
+              <Card key={restaurant.idx}>
+                <CardContent className="p-4 flex items-start space-x-4">
+                  <img
+                    src={"../app/favicon.ico"}
+                    alt={restaurant.name}
+                    className="w-24 h-24 rounded-md object-cover"
+                  />
+                  <div className="flex-1 space-y-1">
+                    <h2 className="font-semibold">{restaurant.name}</h2>
+                    <div className="flex items-start">
+                      <MapPin className="w-4 h-4 text-muted-foreground mt-1 mr-1 flex-shrink-0" />
+                      <p className="text-sm">{restaurant.addr}</p>
+                    </div>
+                    <p className="text-sm">{restaurant.dist + " " + restaurant.reqtime}</p>
+                    <div className="flex items-center">
+                      <Star className="w-4 h-4 text-yellow-400 mr-1" />
+                      <p className="text-sm">{restaurant.total_score}</p>
+                    </div>
                   </div>
-                  <p className="text-sm">{res[index].dist + " " + res[index].reqtime}</p>
-                  <div className="flex items-center">
-                    <Star className="w-4 h-4 text-yellow-400 mr-1" />
-                    <p className="text-sm">{res[index].total_score}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
             </animated.div>
           ))}
         </div>
