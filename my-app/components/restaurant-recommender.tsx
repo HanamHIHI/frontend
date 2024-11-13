@@ -58,6 +58,7 @@ export function RestaurantRecommender() {
     try {
       const response = await request.post("predict", { "text": searchTerm });
       setRes(response.data["vals"]);
+      console.log(res);
     } catch (err) {
       console.log(err);
     }
@@ -96,14 +97,14 @@ export function RestaurantRecommender() {
                     alt={res[index].name}
                     className="w-24 h-24 rounded-md object-cover"
                   /> */}
-                  <ImageComponent imageName={res[index].category0}></ImageComponent>
+                  <ImageComponent imageName={res[index].category0+(res[index].name.length%3).toString()}></ImageComponent>
                   <div className="flex-1 space-y-1">
                     <h2 className="font-semibold">{res[index].name}</h2>
                     <div className="flex items-start">
                       <MapPin className="w-4 h-4 text-muted-foreground mt-1 mr-1 flex-shrink-0" />
                       <p className="text-sm">{res[index].addr}</p>
                     </div>
-                    <p className="text-sm">{res[index].dist + "m, " + res[index].reqtime/60 + "분 " + res[index].reqtime%60 + "초 소요" }</p>
+                    <p className="text-sm">{res[index].dist + "m, " + Math.trunc(res[index].reqtime/60) + "분 " + res[index].reqtime%60 + "초 소요" }</p>
                     <div className="flex items-center">
                       <Star className="w-4 h-4 text-yellow-400 mr-1" />
                       <p className="text-sm">{res[index].total_score}</p>
