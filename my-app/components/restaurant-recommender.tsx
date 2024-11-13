@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import axios from "axios"
 import { useState } from 'react'
 import { Loading } from './loading'
-import { useTrail, animated } from 'react-spring';
+import { useTransition, useTrail, animated } from 'react-spring';
 import ImageComponent from './image-component'
 
 type Restaurant = {
@@ -25,7 +25,36 @@ export function RestaurantRecommender() {
   const [searchTerm, setSearchTerm] = useState('');
   const [res, setRes] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(false);
-  const [trailKey, setTrailKey] = useState(false);  // trail 애니메이션 키를 위한 상태 추가
+  const [trailKey, setTrailKey] = useState(false);  // trail 애니메이션 키를 위한 상태 추가  
+  const [expandedCardId, setExpandedCardId] = useState<number | null>(null);
+
+  const handleCardClick = (id: number) => {
+    // 클릭된 카드가 이미 열려 있으면 닫고, 그렇지 않으면 열기
+    setExpandedCardId(prev => (prev === id ? null : id));
+  };
+
+  // // useTransition을 사용하여 카드가 열리고 닫히는 애니메이션을 처리
+  // const transitions = useTransition(expandedCardId, {
+  //   from: { opacity: 0, height: '0px', marginBottom: '0px' },
+  //   enter: { opacity: 1, height: 'auto', marginBottom: '10px' },
+  //   leave: { opacity: 0, height: '0px', marginBottom: '0px' },
+  //   config: { tension: 250, friction: 25 },
+  // });
+
+  const transitions = useTransition(expandedCardId, {
+    from: { opacity: 0, height: 0 },
+    enter: { opacity: 1, height: 150 }, // 원하는 높이로 설정
+    leave: { opacity: 0, height: 0 },
+    config: {
+      duration: 300, // 애니메이션의 지속 시간 설정
+    },
+    onRest: () => {
+      if (expandedCardId === null) {
+        // 애니메이션이 끝난 후에만 상태를 업데이트
+        setExpandedCardId(null);
+      }
+    },
+  });
 
   // useTrail을 사용하여 각 항목에 순차적인 애니메이션 적용
   const trail = useTrail(res.length, {
@@ -90,28 +119,46 @@ export function RestaurantRecommender() {
         <div className="space-y-4">
           {trail.map((style, index) => (
             <animated.div key={res[index].idx} style={style}>  {/* key에 trailKey를 포함시켜 애니메이션을 재시작 */}
-              <Card>
-                <CardContent className="p-4 flex items-start space-x-4">
-                  {/* <img
+              <div key={index}>
+                <Card onClick={() => handleCardClick(index)}>
+                  <CardContent className="p-4 flex items-start space-x-4 cursor-pointer">
+                    {/* <img
                     src={"../app/favicon.ico"}
                     alt={res[index].name}
                     className="w-24 h-24 rounded-md object-cover"
                   /> */}
-                  <ImageComponent imageName={res[index].category0+(res[index].name.length%3).toString()}></ImageComponent>
-                  <div className="flex-1 space-y-1">
-                    <h2 className="font-semibold">{res[index].name}</h2>
-                    <div className="flex items-start">
-                      <MapPin className="w-4 h-4 text-muted-foreground mt-1 mr-1 flex-shrink-0" />
-                      <p className="text-sm">{res[index].addr}</p>
+                    <ImageComponent imageName={res[index].category0 + (res[index].name.length % 3).toString()}></ImageComponent>
+                    <div className="flex-1 space-y-1">
+                      <h2 className="font-semibold">{res[index].name}</h2>
+                      <div className="flex items-start">
+                        <MapPin className="w-4 h-4 text-muted-foreground mt-1 mr-1 flex-shrink-0" />
+                        <p className="text-sm">{res[index].addr}</p>
+                      </div>
+                      <p className="text-sm">{res[index].dist + "m, " + Math.trunc(res[index].reqtime / 60) + "분 " + res[index].reqtime % 60 + "초 소요"}</p>
+                      <div className="flex items-center">
+                        <Star className="w-4 h-4 text-yellow-400 mr-1" />
+                        <p className="text-sm">{res[index].total_score}</p>
+                      </div>
                     </div>
-                    <p className="text-sm">{res[index].dist + "m, " + Math.trunc(res[index].reqtime/60) + "분 " + res[index].reqtime%60 + "초 소요" }</p>
-                    <div className="flex items-center">
-                      <Star className="w-4 h-4 text-yellow-400 mr-1" />
-                      <p className="text-sm">{res[index].total_score}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+
+                {/* useTransition을 이용해 컴포넌트의 마운트 및 언마운트를 제어 */}
+                {transitions(
+                  (style, item) =>
+                    item === index && (
+                      <animated.div
+                        style={{
+                          ...style,
+                          overflow: 'hidden',  // 내용이 넘치는 부분 숨기기
+                        }}
+                        className="p-4 border rounded-md bg-gray-100"
+                      >
+                        <h3 className="font-medium">{index}</h3>
+                        <p>{index}</p>
+                      </animated.div>
+                    ))}
+              </div>
             </animated.div>
           ))}
         </div>
