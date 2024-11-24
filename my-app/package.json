@@ -17,8 +17,10 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.454.0",
     "next": "15.0.3",
-    "react": "19.0.0-rc-66855b96-20241106",
-    "react-dom": "19.0.0-rc-66855b96-20241106",
+    "rc-slider": "^11.1.7",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-query": "^3.39.3",
     "react-spinners": "^0.14.1",
     "react-spring": "^9.7.4",
     "serve": "^14.2.4",
@@ -27,6 +29,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@types/navermaps": "^3.7.8",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

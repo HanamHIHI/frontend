@@ -8,17 +8,19 @@ import { useState } from 'react'
 import { Loading } from './loading'
 import { useTransition, useTrail, animated } from 'react-spring';
 import ImageComponent from './image-component'
+import DiscreteRangeSlider from "@/components/slider";
+import Map from './naver-map'
+import { NextProviders } from '@/app/providers'
+
 
 type Restaurant = {
   idx: number,
-  name: string,
-  review_score: number,
-  category_score: number,
-  total_score: number,
+  name: string,  vector_score: number,
   addr: string | '',
   dist: number | 0,
   reqtime: number | 0,
   category0: string,
+  route: number[][],
 }
 
 export function RestaurantRecommender() {
@@ -27,23 +29,20 @@ export function RestaurantRecommender() {
   const [loading, setLoading] = useState(false);
   const [trailKey, setTrailKey] = useState(false);  // trail 애니메이션 키를 위한 상태 추가  
   const [expandedCardId, setExpandedCardId] = useState<number | null>(null);
+  const [range, setRange] = useState<[number, number]>([20, 80]);
+
+  const handleRangeUpdate = (newRange: [number, number]) => {
+    setRange(newRange);
+  };
 
   const handleCardClick = (id: number) => {
     // 클릭된 카드가 이미 열려 있으면 닫고, 그렇지 않으면 열기
     setExpandedCardId(prev => (prev === id ? null : id));
   };
 
-  // // useTransition을 사용하여 카드가 열리고 닫히는 애니메이션을 처리
-  // const transitions = useTransition(expandedCardId, {
-  //   from: { opacity: 0, height: '0px', marginBottom: '0px' },
-  //   enter: { opacity: 1, height: 'auto', marginBottom: '10px' },
-  //   leave: { opacity: 0, height: '0px', marginBottom: '0px' },
-  //   config: { tension: 250, friction: 25 },
-  // });
-
   const transitions = useTransition(expandedCardId, {
-    from: { opacity: 0, height: 0 },
-    enter: { opacity: 1, height: 150 }, // 원하는 높이로 설정
+    from: { opacity: 0, height: 0  },
+    enter: { opacity: 1, height: 416 }, // 원하는 높이로 설정
     leave: { opacity: 0, height: 0 },
     config: {
       duration: 300, // 애니메이션의 지속 시간 설정
@@ -85,9 +84,14 @@ export function RestaurantRecommender() {
     const [request] = makeAxios();
 
     try {
-      const response = await request.post("predict", { "text": searchTerm });
+      // console.log(range[0], range[1])
+      const response = await request.post("predict",
+        {
+          "text": searchTerm,
+          "range_start": range[0],
+          "range_end": range[1],
+        });
       setRes(response.data["vals"]);
-      console.log(res);
     } catch (err) {
       console.log(err);
     }
@@ -112,6 +116,9 @@ export function RestaurantRecommender() {
           className="pl-10 pr-4 py-2 w-full"
         />
       </div>
+      <div className="relative">
+        <DiscreteRangeSlider range={range} onRangeChange={handleRangeUpdate} />
+      </div>
 
       {loading && <Loading />}
 
@@ -122,22 +129,17 @@ export function RestaurantRecommender() {
               <div key={index}>
                 <Card onClick={() => handleCardClick(index)}>
                   <CardContent className="p-4 flex items-start space-x-4 cursor-pointer">
-                    {/* <img
-                    src={"../app/favicon.ico"}
-                    alt={res[index].name}
-                    className="w-24 h-24 rounded-md object-cover"
-                  /> */}
-                    <ImageComponent imageName={res[index].category0 + (res[index].name.length % 3).toString()}></ImageComponent>
+                    <ImageComponent imageName={res[index].category0 + (res[index].name.length % 5).toString()}></ImageComponent>
                     <div className="flex-1 space-y-1">
                       <h2 className="font-semibold">{res[index].name}</h2>
                       <div className="flex items-start">
                         <MapPin className="w-4 h-4 text-muted-foreground mt-1 mr-1 flex-shrink-0" />
                         <p className="text-sm">{res[index].addr}</p>
                       </div>
-                      <p className="text-sm">{res[index].dist + "m, " + Math.trunc(res[index].reqtime / 60) + "분 " + res[index].reqtime % 60 + "초 소요"}</p>
+                      <p className="text-sm">{res[index].dist + "m, " + "걸어서 " + Math.trunc(res[index].reqtime / 60) + "분 " + res[index].reqtime % 60 + "초 소요"}</p>
                       <div className="flex items-center">
                         <Star className="w-4 h-4 text-yellow-400 mr-1" />
-                        <p className="text-sm">{res[index].total_score}</p>
+                        <p className="text-sm">{2 - res[index].vector_score}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -150,12 +152,12 @@ export function RestaurantRecommender() {
                       <animated.div
                         style={{
                           ...style,
-                          overflow: 'hidden',  // 내용이 넘치는 부분 숨기기
+                          position: 'relative',
+                          // overflow: 'hidden',  // 내용이 넘치는 부분 숨기기
                         }}
                         className="p-4 border rounded-md bg-gray-100"
                       >
-                        <h3 className="font-medium">{index}</h3>
-                        <p>{index}</p>
+                        <NextProviders>{<Map address={res[index].addr} route={res[index].route}></Map>}</NextProviders>
                       </animated.div>
                     ))}
               </div>
