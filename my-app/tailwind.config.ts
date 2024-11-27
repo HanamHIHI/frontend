@@ -18,6 +18,9 @@ const config = {
       },
     },
     extend: {
+      height: {
+        '38': '9.5rem', // 38 * 4px = 152px
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

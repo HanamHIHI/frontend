@@ -25,7 +25,7 @@ const ImageComponent: React.FC<ImageComponentProps> = ({ imageName }) => {
     fetchImage();
   }, [imageName]);
 
-  return <Image className="w-24 h-24 rounded-md object-cover" src={imageSrc} alt={imageName} />;
+  return <Image className="w-24 h-24 rounded-md object-cover my-auto" src={imageSrc} alt={imageName} />;
 };
 
 export default ImageComponent;

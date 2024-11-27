@@ -37,7 +37,7 @@ const Map: React.FC<Address> = ({ address, route }) => {
       map: map,
       path: polylinePath,
       strokeWeight: 2,
-      strokeColor: "#032807",
+      strokeColor: "#318F23",
       strokeLineCap: "round",
       strokeLineJoin: "round",
       startIcon: 3,

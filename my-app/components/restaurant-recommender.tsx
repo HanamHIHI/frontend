@@ -11,11 +11,13 @@ import ImageComponent from './image-component'
 import DiscreteRangeSlider from "@/components/slider";
 import Map from './naver-map'
 import { NextProviders } from '@/app/providers'
-
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/effect-cards";
 
 type Restaurant = {
   idx: number,
-  name: string,  vector_score: number,
+  name: string, vector_score: number,
   addr: string | '',
   dist: number | 0,
   reqtime: number | 0,
@@ -24,6 +26,8 @@ type Restaurant = {
 }
 
 export function RestaurantRecommender() {
+  const contents = [0, 1];
+
   const [searchTerm, setSearchTerm] = useState('');
   const [res, setRes] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(false);
@@ -41,7 +45,7 @@ export function RestaurantRecommender() {
   };
 
   const transitions = useTransition(expandedCardId, {
-    from: { opacity: 0, height: 0  },
+    from: { opacity: 0, height: 0 },
     enter: { opacity: 1, height: 416 }, // 원하는 높이로 설정
     leave: { opacity: 0, height: 0 },
     config: {
@@ -127,23 +131,45 @@ export function RestaurantRecommender() {
           {trail.map((style, index) => (
             <animated.div key={res[index].idx} style={style}>  {/* key에 trailKey를 포함시켜 애니메이션을 재시작 */}
               <div key={index}>
-                <Card onClick={() => handleCardClick(index)}>
-                  <CardContent className="p-4 flex items-start space-x-4 cursor-pointer">
-                    <ImageComponent imageName={res[index].category0 + (res[index].name.length % 5).toString()}></ImageComponent>
-                    <div className="flex-1 space-y-1">
-                      <h2 className="font-semibold">{res[index].name}</h2>
-                      <div className="flex items-start">
-                        <MapPin className="w-4 h-4 text-muted-foreground mt-1 mr-1 flex-shrink-0" />
-                        <p className="text-sm">{res[index].addr}</p>
-                      </div>
-                      <p className="text-sm">{res[index].dist + "m, " + "걸어서 " + Math.trunc(res[index].reqtime / 60) + "분 " + res[index].reqtime % 60 + "초 소요"}</p>
-                      <div className="flex items-center">
-                        <Star className="w-4 h-4 text-yellow-400 mr-1" />
-                        <p className="text-sm">{2 - res[index].vector_score}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <Swiper
+                  effect="cards" // 카드 효과 활성화
+                  grabCursor={true} // 드래그 커서 표시
+                >
+                  {contents.map((content, innerIndex) => (
+                    <SwiperSlide
+                      key={innerIndex}
+                      style={{
+                        justifyContent: "center",
+                        alignItems: "center",
+                        borderRadius: "16px",
+                        backgroundColor: "#FFFFFF",
+                        minHeight: "152px",
+                      }}
+                    >
+                      {content == 0 && <Card onClick={() => handleCardClick(index)}>
+                        <CardContent className="p-4 h-38 flex items-start space-x-4 cursor-pointer">
+                          <ImageComponent imageName={res[index].category0 + (res[index].name.length % 5).toString()}></ImageComponent>
+                          <div className="flex-1 space-y-1">
+                            <h2 className="font-semibold">{res[index].name}</h2>
+                            <div className="flex items-start">
+                              <MapPin className="w-4 h-4 text-muted-foreground mt-1 mr-1 flex-shrink-0" />
+                              <p className="text-sm">{res[index].addr}</p>
+                            </div>
+                            <p className="text-sm">{res[index].dist + "m, " + "걸어서 " + Math.trunc(res[index].reqtime / 60) + "분 " + res[index].reqtime % 60 + "초 소요"}</p>
+                            <div className="flex items-center">
+                              <Star className="w-4 h-4 text-yellow-400 mr-1" />
+                              <p className="text-sm">{2 - res[index].vector_score}</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>}
+                      {content == 1 && <Card onClick={() => handleCardClick(index)}>
+                        <CardContent className="p-4 h-38 flex items-start space-x-4 cursor-pointer">
+                          {""}
+                        </CardContent>
+                      </Card>}
+                    </SwiperSlide>))}
+                </Swiper>
 
                 {/* useTransition을 이용해 컴포넌트의 마운트 및 언마운트를 제어 */}
                 {transitions(
