@@ -183,7 +183,7 @@ export function RestaurantRecommender() {
                         }}
                         className="p-4 border rounded-md bg-gray-100"
                       >
-                        <NextProviders>{<Map address={res[index].addr} route={res[index].route}></Map>}</NextProviders>
+                        <NextProviders>{<Map route={res[index].route}></Map>}</NextProviders>
                       </animated.div>
                     ))}
               </div>

@@ -1,64 +1,52 @@
 import { useState, useEffect, useRef } from "react";
 
 type Address = {
-  address: string,
   route: number[][]
 };
 
-const Map: React.FC<Address> = ({ address, route }) => {
-  const [x, setX] = useState(0);
-  const [y, setY] = useState(0);
-  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null); // 사용자 위치 상태
+const Map: React.FC<Address> = ({ route }) => {
+  const [location, setLocation] = useState<{ lat: number; lng: number }>({ lat: 37.5739531, lng: 127.1940553 }); // 사용자 위치 상태
   const mapRef = useRef<naver.maps.Map | null>(null);
   const markerRef = useRef<naver.maps.Marker | null>(null);
+  const customControl = new naver.maps.CustomControl('<a href="#" class="btn_mylct"><img src="/current-circle-blue.svg" width="10%" height="10%" style="margin: 0 0 22.4px 10px"></img></a>', {
+    position: naver.maps.Position.LEFT_BOTTOM
+  });
 
   const initMapSetting = () => {
-    if(mapRef.current) {
-      const mapMarker = new naver.maps.Marker({
-        position: new naver.maps.LatLng(x, y),
-        map: mapRef.current,
-      });
-      const startMapMarker = new naver.maps.Marker({
-        // Latitude : 37.5739531
-        // Longitude : 127.1940553
-        position: new naver.maps.LatLng(37.5739531, 127.1940553),
-        map: mapRef.current,    
-      });
-      const polylinePath = [];
-      for (const value of route) {
-        polylinePath.push(new naver.maps.LatLng(value[1], value[0]));
-      }
-      const polyline = new naver.maps.Polyline({
-        map: mapRef.current,
-        path: polylinePath,
-        strokeWeight: 2,
-        strokeLineCap: "round",
-        strokeLineJoin: "round",
-        startIcon: 3,
-        endIcon: 1,
-      });
-
-      return [mapMarker, startMapMarker, polyline];
-    }
-  }
-
-  useEffect(() => {
-    naver.maps.Service.geocode(
-      {
-        query: address,
-      },
-      function (status, response) {
-        const result = response.v2.addresses[0];
-        setX(Number(result.x));
-        setY(Number(result.y));
-      }
-    );
-
     mapRef.current = new naver.maps.Map("my-comp", {
       center: new naver.maps.LatLng(37.5739531, 127.1940553),
       zoom: 17,
     });
 
+    const mapMarker = new naver.maps.Marker({
+      position: new naver.maps.LatLng(route[route.length - 1][1], route[route.length - 1][0]),
+      map: mapRef.current,
+    });
+    const startMapMarker = new naver.maps.Marker({
+      position: new naver.maps.LatLng(37.5739531, 127.1940553),
+      map: mapRef.current,
+    });
+    const polylinePath = [];
+    for (const value of route) {
+      polylinePath.push(new naver.maps.LatLng(value[1], value[0]));
+    }
+    const polyline = new naver.maps.Polyline({
+      map: mapRef.current,
+      path: polylinePath,
+      strokeWeight: 2,
+      strokeLineCap: "round",
+      strokeLineJoin: "round",
+      startIcon: 3,
+      endIcon: 1,
+    });
+
+    naver.maps.Event.once(mapRef.current, 'init', function () {
+      customControl.setMap(mapRef.current);
+    });
+    return [mapMarker, startMapMarker, polyline];
+  }
+
+  useEffect(() => {
     initMapSetting();
 
     // Geolocation API를 사용해 사용자 위치 추적
@@ -69,7 +57,6 @@ const Map: React.FC<Address> = ({ address, route }) => {
           lng: position.coords.longitude,
         };
         setLocation(newLocation); // 상태 업데이트
-        // console.log("User location updated:", newLocation);
       },
       (error) => {
         console.error("Error getting location:", error.message);
@@ -92,9 +79,15 @@ const Map: React.FC<Address> = ({ address, route }) => {
         });
       }
     } {
-      markerRef.current?.setPosition(new naver.maps.LatLng(location!.lat, location!.lng))
+      markerRef.current?.setPosition(new naver.maps.LatLng(location.lat, location.lng));
     }
   }, [location]);
+
+  useEffect(() => {
+    const handleCenterMove = function () { mapRef.current!.setCenter(new naver.maps.LatLng(location.lat, location.lng)); }
+    naver.maps.Event.clearListeners(customControl, "click");
+    naver.maps.Event.addDOMListener(customControl.getElement(), 'click', handleCenterMove);
+  }, [mapRef.current?.getCenter()]);
 
   return (
     <>
