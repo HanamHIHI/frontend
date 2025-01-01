@@ -1,5 +1,3 @@
-'use client'
-
 import { MapPin, Star, Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
@@ -14,6 +12,7 @@ import { NextProviders } from '@/app/providers'
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/effect-cards";
+import HorizonLine from './horizontal-line'
 
 type Restaurant = {
   idx: number,
@@ -124,6 +123,8 @@ export function RestaurantRecommender() {
         <DiscreteRangeSlider range={range} onRangeChange={handleRangeUpdate} />
       </div>
 
+      <HorizonLine></HorizonLine>
+
       {loading && <Loading />}
 
       {!loading && res.length > 0 && (
@@ -131,23 +132,23 @@ export function RestaurantRecommender() {
           {trail.map((style, index) => (
             <animated.div key={res[index].idx} style={style}>  {/* key에 trailKey를 포함시켜 애니메이션을 재시작 */}
               <div key={index}>
-                <Swiper
-                  effect="cards" // 카드 효과 활성화
-                  grabCursor={true} // 드래그 커서 표시
-                >
-                  {contents.map((content, innerIndex) => (
-                    <SwiperSlide
-                      key={innerIndex}
-                      style={{
-                        justifyContent: "center",
-                        alignItems: "center",
-                        borderRadius: "16px",
-                        backgroundColor: "#FFFFFF",
-                        minHeight: "152px",
-                      }}
-                    >
-                      {content == 0 && <Card onClick={() => handleCardClick(index)}>
-                        <CardContent className="p-4 h-38 flex items-start space-x-4 cursor-pointer">
+                <Card>
+                  <Swiper
+                    effect="cards" // 카드 효과 활성화
+                    grabCursor={true} // 드래그 커서 표시
+                  >
+                    {contents.map((content, innerIndex) => (
+                      <SwiperSlide
+                        key={innerIndex}
+                        style={{
+                          justifyContent: "center",
+                          alignItems: "center",
+                          borderRadius: "16px",
+                          backgroundColor: "#FFFFFF",
+                          minHeight: "152px",
+                        }}
+                      >
+                        {content == 0 && <CardContent className="p-4 h-38 flex items-start space-x-4 cursor-pointer" onClick={() => handleCardClick(index)}>
                           <ImageComponent imageName={res[index].category0 + (res[index].name.length % 5).toString()}></ImageComponent>
                           <div className="flex-1 space-y-1">
                             <h2 className="font-semibold">{res[index].name}</h2>
@@ -161,16 +162,14 @@ export function RestaurantRecommender() {
                               <p className="text-sm">{2 - res[index].vector_score}</p>
                             </div>
                           </div>
-                        </CardContent>
-                      </Card>}
-                      {content == 1 && <Card onClick={() => handleCardClick(index)}>
-                        <CardContent className="p-4 h-38 flex items-start space-x-4 cursor-pointer">
-                          {""}
-                        </CardContent>
-                      </Card>}
-                    </SwiperSlide>))}
-                </Swiper>
+                        </CardContent>}
+                        {content == 1 && <CardContent className="p-4 h-38 flex items-start space-x-4 cursor-pointer" onClick={() => handleCardClick(index)}>
+                          {''}
+                        </CardContent>}
+                      </SwiperSlide>))}
 
+                  </Swiper>
+                </Card>
                 {/* useTransition을 이용해 컴포넌트의 마운트 및 언마운트를 제어 */}
                 {transitions(
                   (style, item) =>
@@ -191,6 +190,9 @@ export function RestaurantRecommender() {
           ))}
         </div>
       )}
+
+      <HorizonLine></HorizonLine>
+
     </div>
   );
 }
