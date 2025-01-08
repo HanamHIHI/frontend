@@ -12,11 +12,11 @@ const Map: React.FC<Address> = ({ route }) => {
 
   const mapRef = useRef<naver.maps.Map | null>(null);
   const markerRef = useRef<naver.maps.Marker | null>(null);
-  
+
   const customControl = new naver.maps.CustomControl('<button><img src="/current-circle-blue.svg" width="10%" height="10%" style="margin: 0 0 22.4px 10px"></img></button>', {
     position: naver.maps.Position.LEFT_BOTTOM
   });
-  const locationControl = new naver.maps.CustomControl('<button><img src="/triangle.svg" width="10%" height="10%" style="margin: 0 0 22.4px 10px"></img></button>', {
+  const locationControl = new naver.maps.CustomControl('<h1>테스트입니다</h1><button><img src="/triangle.svg" width="10%" height="10%" style="margin: 0 0 22.4px 10px"></img></button>', {
     position: naver.maps.Position.LEFT_TOP
   });
 
@@ -48,24 +48,23 @@ const Map: React.FC<Address> = ({ route }) => {
       endIcon: 1,
     });
 
-    // setLocationMarker(() => {
-    //   console.log("locationMarker rendered!");
+    if (testFlag) {
+      const handleLocationMove = function () {
+        setLocation((preLocation) => ({ // 와.... location의 불변성 유지 필요....
+          ...preLocation,
+          lat: preLocation.lat + 0.005,
+          lng: preLocation.lng,
+        })); // 상태 업데이트
+      };
+      naver.maps.Event.addDOMListener(locationControl.getElement(), "click", handleLocationMove);
 
-    //   return new naver.maps.Marker({ position: new naver.maps.LatLng(0, 0), map: mapRef.current! });
-    // });
-    
-    const handleLocationMove = function () {
-      setLocation((preLocation) => ({ // 와.... location의 불변성 유지 필요....
-        ...preLocation,
-        lat: preLocation.lat+0.005,
-        lng: preLocation.lng,
-      })); // 상태 업데이트
-    };
-    naver.maps.Event.addDOMListener(locationControl.getElement(), "click", handleLocationMove);
+      naver.maps.Event.once(mapRef.current, 'init', function () {
+        locationControl.setMap(mapRef.current);
+      });
+    }
 
     naver.maps.Event.once(mapRef.current, 'init', function () {
       customControl.setMap(mapRef.current);
-      testFlag && locationControl.setMap(mapRef.current);
     });
 
     return [mapMarker, startMapMarker, polyline];
@@ -112,12 +111,12 @@ const Map: React.FC<Address> = ({ route }) => {
         markerRef.current.setPosition(new naver.maps.LatLng(location.lat, location.lng));
       }
     }
-    const handleCenterMove = function () {    
+    const handleCenterMove = function () {
       if (locationRef.current && mapRef.current) {
         mapRef.current.setCenter(new naver.maps.LatLng(locationRef.current.lat, locationRef.current.lng));
       }
     };
-    
+
     naver.maps.Event.removeDOMListener(customControl.getElement(), "click", handleCenterMove);
     naver.maps.Event.addDOMListener(customControl.getElement(), "click", handleCenterMove);
   }, [location]);
