@@ -29,7 +29,8 @@ export function RestaurantRecommender() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [res, setRes] = useState<Restaurant[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [alreadySearchedFlag, setAlreadySearchedFlag] = useState(false);
+  const [loadingFlag, setLoadingFlag] = useState(false);
   const [trailKey, setTrailKey] = useState(false);  // trail 애니메이션 키를 위한 상태 추가  
   const [expandedCardId, setExpandedCardId] = useState<number | null>(null);
   const [range, setRange] = useState<[number, number]>([20, 80]);
@@ -67,17 +68,19 @@ export function RestaurantRecommender() {
   });
 
   const makeAxios = () => {
+    setAlreadySearchedFlag(true);
+
     const request = axios.create({
       baseURL: "https://api.what-to-eat-hanam.site/",
       timeout: 100000,
     });
 
     request.interceptors.request.use(
-      (config) => { setLoading(true); setTrailKey(true); return config; }
+      (config) => { setLoadingFlag(true); setTrailKey(true); return config; }
     );
 
     request.interceptors.response.use(
-      (config) => { setLoading(false); setTrailKey(false); return config; }
+      (config) => { setLoadingFlag(false); setTrailKey(false); return config; }
     );
 
     return [request];
@@ -123,11 +126,11 @@ export function RestaurantRecommender() {
         <DiscreteRangeSlider range={range} onRangeChange={handleRangeUpdate} />
       </div>
 
-      <HorizonLine></HorizonLine>
+      {alreadySearchedFlag && <HorizonLine></HorizonLine>}
 
-      {loading && <Loading />}
+      {loadingFlag && <Loading />}
 
-      {!loading && res.length > 0 && (
+      {!loadingFlag && res.length > 0 && (
         <div className="space-y-4">
           {trail.map((style, index) => (
             <animated.div key={res[index].idx} style={style}>  {/* key에 trailKey를 포함시켜 애니메이션을 재시작 */}
@@ -191,7 +194,16 @@ export function RestaurantRecommender() {
         </div>
       )}
 
-      <HorizonLine></HorizonLine>
+      <>
+        <HorizonLine></HorizonLine>
+        <div className="text-sm text-gray-500">
+          하남 맛집 추천 시스템은 LLM을 사용한 임베딩에 기반합니다.<br/>
+          LLM은 실수를 할 수 있습니다. 중요한 정보를 확인하세요.<br/>
+          <br/>
+          결정적으로, 사람마다 입맛이 다릅니다.<br/>
+          맛집 추천 시스템은 참고용으로만 사용하세요.<br/>
+        </div>
+      </>
 
     </div>
   );
