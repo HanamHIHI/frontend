@@ -22,6 +22,7 @@ type Restaurant = {
   reqtime: number | 0,
   category0: string,
   route: number[][],
+  summ: string,
 }
 
 export function RestaurantRecommender() {
@@ -151,7 +152,7 @@ export function RestaurantRecommender() {
                           minHeight: "152px",
                         }}
                       >
-                        {content == 0 && <CardContent className="p-4 h-38 flex items-start space-x-4 cursor-pointer" onClick={() => handleCardClick(index)}>
+                        {content == 0 && <CardContent className="p-4 h-38 flex items-center space-x-4 cursor-pointer" onClick={() => handleCardClick(index)}>
                           <ImageComponent imageName={res[index].category0 + (res[index].name.length % 5).toString()}></ImageComponent>
                           <div className="flex-1 space-y-1">
                             <h2 className="font-semibold">{res[index].name}</h2>
@@ -166,8 +167,8 @@ export function RestaurantRecommender() {
                             </div>
                           </div>
                         </CardContent>}
-                        {content == 1 && <CardContent className="p-4 h-38 flex items-start space-x-4 cursor-pointer" onClick={() => handleCardClick(index)}>
-                          {''}
+                        {content == 1 && <CardContent className="p-4 h-38 flex items-center space-x-4 cursor-pointer" onClick={() => handleCardClick(index)}>
+                          {res[index].summ}
                         </CardContent>}
                       </SwiperSlide>))}
 
@@ -200,8 +201,8 @@ export function RestaurantRecommender() {
           하남 맛집 추천 시스템은 LLM을 사용한 임베딩에 기반합니다.<br/>
           LLM은 실수를 할 수 있습니다. 중요한 정보를 확인하세요.<br/>
           <br/>
-          결정적으로, 사람마다 입맛이 다릅니다.<br/>
-          맛집 추천 시스템은 참고용으로만 사용하세요.<br/>
+          개인마다 음식에 대한 선호가 다릅니다.<br/>
+          하남 맛집 추천 시스템은 참고용으로만 사용하세요.<br/>
         </div>
       </>
 
